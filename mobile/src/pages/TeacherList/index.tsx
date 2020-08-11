@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text } from 'react-native';
 import styles from './styles';
 import PageHeader from '../../components/PageHeader';
@@ -7,6 +7,7 @@ import { ScrollView, TextInput, BorderlessButton, RectButton } from 'react-nativ
 import { Feather } from '@expo/vector-icons';
 import api from '../../services/api';
 import AsyncStorage from '@react-native-community/async-storage'
+import { useFocusEffect } from '@react-navigation/native';
 
 function TeacherList(){
     const [isFiltersVisible, setisFiltersVisible] = useState(false);
@@ -16,7 +17,7 @@ function TeacherList(){
     const [teachers, setTeachers] = useState([]);
     const [ favorites, setFavorites] = useState<number[]>([]);
 
-    useEffect(()=>{
+    function loadFavorites(){
         AsyncStorage.getItem('favorites').then(response=>{
             if(response){
                 const favoritedTeachers = JSON.parse(response);
@@ -24,13 +25,20 @@ function TeacherList(){
                 setFavorites(favoritedTeachersIds);
             }
         });
-    }, [])
+    }
+
+    useFocusEffect(()=>{
+        loadFavorites();
+    });
+
 
     function handleToggleFilterVisible() {
         setisFiltersVisible(!isFiltersVisible)
     }
 
    async function handleFilterSubmit(){
+        loadFavorites();
+
         const response = await api.get('classes', {
             params:{
                 subject,
